@@ -1,6 +1,7 @@
 import random
 from games4e import Game
 from tools import get_card_value, compare_cards, draw_cards 
+from copy import deepcopy
 
 class Briscola(Game):
     """Play a game of Briscola between two players.
@@ -19,17 +20,8 @@ class Briscola(Game):
     The deck is represented by a list of cards.    
     """
 
-    full_deck = [('Ace', 'Bastoni'), ('Ace', 'Denari'), ('Ace', 'Spade'), ('Ace', 'Coppe'),
-                 ('2', 'Bastoni'), ('2', 'Denari'), ('2', 'Spade'), ('2', 'Coppe'),
-                 ('3', 'Bastoni'), ('3', 'Denari'), ('3', 'Spade'), ('3', 'Coppe'),
-                 ('4', 'Bastoni'), ('4', 'Denari'), ('4', 'Spade'), ('4', 'Coppe'),
-                 ('5', 'Bastoni'), ('5', 'Denari'), ('5', 'Spade'), ('5', 'Coppe'),
-                 ('6', 'Bastoni'), ('6', 'Denari'), ('6', 'Spade'), ('6', 'Coppe'),
-                 ('7', 'Bastoni'), ('7', 'Denari'), ('7', 'Spade'), ('7', 'Coppe'),
-                 ('Jack', 'Bastoni'), ('Jack', 'Denari'), ('Jack', 'Spade'), ('Jack', 'Coppe'),
-                 ('Horse', 'Bastoni'), ('Horse', 'Denari'), ('Horse', 'Spade'), ('Horse', 'Coppe'),
-                 ('King', 'Bastoni'), ('King', 'Denari'), ('King', 'Spade'), ('King', 'Coppe')]
-    
+    full_deck = [(i, suit) for i in ['Ace', '2', '3', '4', '5', '6', '7', 'Jack', 'Horse', 'King'] for suit in ['Bastoni', 'Denari', 'Spade', 'Coppe']]
+
     # the initial state is a random trump, random hands and a random player to move
     my_sample = random.sample(full_deck, 7)
     hand1, hand2, trump = my_sample[:3], my_sample[3:6], [my_sample[6]]
@@ -41,10 +33,6 @@ class Briscola(Game):
     trump = trump[0]
     initial = {'hand1': hand1, 'hand2': hand2, 'table': [], 'player': random.choice([1, 2]), 'taken1': [], 'taken2': [], 'briscola': trump, 'deck': deck}   
 
-    def __init__(self):
-        """Initialize the game."""
-        self.state = self.initial
-
     def actions(self, state):
         """Return a list of the allowable moves at this point."""
         # available actions are the cards in the hand of the player to move
@@ -54,68 +42,58 @@ class Briscola(Game):
         """Return the state that results from making a move from a state."""
         # move is the card played by the player to move
         # the card is removed from the hand of the player to move
-        hand = state['hand' + str(state['player'])]
-        hand.remove(move)
+        new_state = deepcopy(state)
+        new_state['hand' + str(new_state['player'])].remove(move)
 
         # the card is added to the table
-        table = state['table']
-        table.append(move)
+        new_state['table'].append(move)
 
         # if there are two cards on the table, evaluate who wins the trick
-        if len(table) == 2:
-            print("The cards on the table are: ", table)
+        if len(new_state['table']) == 2:
+            # print("The cards on the table are: ", table)
             # get the trump card
-            trump = state['briscola']
+            trump = new_state['briscola']
 
             # get the cards on the table
-            card_first_to_move = table[0]
-            card_second_to_move = table[1]
+            card_first_to_move = new_state['table'][0]
+            card_second_to_move = new_state['table'][1]
 
             # if the first card wins, the player that had just moved loses the trick
             if compare_cards(card_first_to_move, card_second_to_move, trump):
-                winner = 3 - state['player']
-                print("The winner is (if): ", winner)
+                winner = 3 - new_state['player']
+                # print("The winner is (if): ", winner)
             else:
-                winner = state['player']
-                print("The winner is (else): ", winner)
+                winner = new_state['player']
+                # print("The winner is (else): ", winner)
 
             # update the state
             # each player draws a card from the deck if there are still cards in the deck
-            if state['deck'] != []:
-                state = draw_cards(state)
-                print("The new hands are: ", state['hand1'], state['hand2'])
+            if new_state['deck'] != []:
+                new_state = draw_cards(new_state)
+                # print("The new hands are: ", state['hand1'], state['hand2'])
 
             # add the cards on the table to the taken cards of the winner
-            taken = state['taken' + str(winner)]
-            taken.extend(table)
-            state['taken' + str(winner)] = taken
+            new_state['taken' + str(winner)].extend(new_state['table'])
 
             # empty the table
-            state['table'] = []
+            new_state['table'] = []
 
             # update the player to move
-            state['player'] = winner
+            new_state['player'] = winner
 
-            return state
+            return new_state
         
         # if there is only one card on the table, the player to move is changed
         else:
-            state['player'] = 3 - state['player']
-            return state
+            new_state['player'] = 3 - new_state['player']
+            return new_state
 
     def utility(self, state, player):
         """Return the value of this final state to player."""
-
         # the player wins if the sum of all cards they took is greater than 60
-        taken = state['taken' + str(player+1)]
-        sum_taken = 0
-        for card in taken:
-            sum_taken += get_card_value(card)
-        
-        if sum_taken > 60:
-            return 1
-        else:
-            return 0
+        sum_taken = sum(get_card_value(card) for card in state['taken' + str(player)])
+
+        return 1 if sum_taken > 60 else 0
         
     def terminal_test(self, state):
         """Return True if this is a final state for the game."""
@@ -141,30 +119,35 @@ class Briscola(Game):
         state = self.initial
         print("GAME START")
         print("The trump is: ", state['briscola'])
-        print("Player 0 hand: ", state['hand1'])
-        print("Player 1 hand: ", state['hand2'])
+        print("Player 1 hand: ", state['hand1'])
+        print("Player 2 hand: ", state['hand2'])
         print("The first to play is: ", state['player'])
         while True:
             # the player to move makes a move
+            state_copy = deepcopy(state)
             if self.to_move(state) == 1:
-                move = player1.generate_move(state, self)
+                move = player1.generate_move(state_copy, self)
             else:
-                move = player2.generate_move(state, self)
-            
+                move = player2.generate_move(state_copy, self)
+            print("The move is: ", move)
             # the move is applied to the state
             state = self.result(state, move)
+            print("The new state is: ", state)
 
             # check if the game is over
             if self.terminal_test(state):
                 print('Game over')
-                if self.utility(state, 0) == 1:
-                    print('Player 0 wins. Total points:', sum([get_card_value(card) for card in state['taken1']]))
-                    print(state['taken1'])
-                    break
-                elif self.utility(state, 1) == 1:
-                    print('Player 1 wins. Total points:', sum([get_card_value(card) for card in state['taken2']]))
-                    print(state['taken2'])
-                    break
+                print("Final state: ", state)
+                print(len(state['taken1']), len(state['taken2']))
+                break
+                # if self.utility(state, 1) == 1:
+                #     # print('Player 1 wins. Total points:', sum([get_card_value(card) for card in state['taken1']]))
+                #     # print(state['taken1'])
+                #     break
+                # elif self.utility(state, 2) == 1:
+                #     # print('Player 2 wins. Total points:', sum([get_card_value(card) for card in state['taken2']]))
+                #     # print(state['taken2'])
+                #     break
 
 
 

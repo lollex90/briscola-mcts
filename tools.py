@@ -1,5 +1,6 @@
 # Tools
 import random
+from copy import deepcopy 
 
 def get_card_value(card):
     '''
@@ -50,18 +51,18 @@ def draw_cards(state):
     """
     Removes two random cards from the deck and puts is in the hands
     """
-
-    card1 = random.choice(state['deck'])
-    state['deck'].remove(card1)
+    state_copy = deepcopy(state)
+    card1 = random.choice(state_copy['deck'])
+    state_copy['deck'].remove(card1)
 
     try:
-        card2 = random.choice(state['deck'])
-        state['deck'].remove(card2)
+        card2 = random.choice(state_copy['deck'])
+        state_copy['deck'].remove(card2)
     except IndexError:
-        card2 = state['briscola']
-        print('Deck is empty, trump is drawn')
+        card2 = state_copy['briscola']
+        # print('Deck is empty, trump is drawn')
 
-    state['hand1'].append(card1)
-    state['hand2'].append(card2)
+    state_copy['hand1'].append(card1)
+    state_copy['hand2'].append(card2)
 
-    return state  
+    return state_copy  
