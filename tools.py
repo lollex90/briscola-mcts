@@ -1,4 +1,3 @@
-# Tools
 import random
 from copy import deepcopy 
 
@@ -8,16 +7,26 @@ def get_card_value(card):
     '''
     card_value = card[0]
 
-    if card_value == 'Ace': return 11
-    elif card_value == '3': return 10
-    elif card_value == 'King': return 4
-    elif card_value == 'Horse': return 3
-    elif card_value == 'Jack': return 2
-    elif card_value == '7': return 0.0007
-    elif card_value == '6': return 0.0006
-    elif card_value == '5': return 0.0005
-    elif card_value == '4': return 0.0004
-    elif card_value == '2': return 0.0002
+    if card_value == 'Ace': 
+        return 11
+    elif card_value == '3': 
+        return 10
+    elif card_value == 'King': 
+        return 4
+    elif card_value == 'Horse': 
+        return 3
+    elif card_value == 'Jack': 
+        return 2
+    elif card_value == '7': 
+        return 0.0007
+    elif card_value == '6': 
+        return 0.0006
+    elif card_value == '5': 
+        return 0.0005
+    elif card_value == '4': 
+        return 0.0004
+    elif card_value == '2': 
+        return 0.0002
 
 def compare_cards(card_first_to_move, card_second_to_move, trump):
     """
@@ -65,4 +74,4 @@ def draw_cards(state):
     state_copy['hand1'].append(card1)
     state_copy['hand2'].append(card2)
 
-    return state_copy  
+    return state_copy

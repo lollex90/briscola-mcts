@@ -1,10 +1,11 @@
 import random
+from copy import deepcopy
 from games4e import Game
 from tools import get_card_value, compare_cards, draw_cards 
-from copy import deepcopy
 
 class Briscola(Game):
-    """Play a game of Briscola between two players.
+    """
+    Play a game of Briscola between two players.
 
     A state is represented by a dictionary of:
         - the cards in the hand of each player (0, 1)
@@ -50,7 +51,6 @@ class Briscola(Game):
 
         # if there are two cards on the table, evaluate who wins the trick
         if len(new_state['table']) == 2:
-            # print("The cards on the table are: ", table)
             # get the trump card
             trump = new_state['briscola']
 
@@ -61,16 +61,13 @@ class Briscola(Game):
             # if the first card wins, the player that had just moved loses the trick
             if compare_cards(card_first_to_move, card_second_to_move, trump):
                 winner = 3 - new_state['player']
-                # print("The winner is (if): ", winner)
             else:
                 winner = new_state['player']
-                # print("The winner is (else): ", winner)
 
             # update the state
             # each player draws a card from the deck if there are still cards in the deck
-            if new_state['deck'] != []:
+            if new_state['deck']:
                 new_state = draw_cards(new_state)
-                # print("The new hands are: ", state['hand1'], state['hand2'])
 
             # add the cards on the table to the taken cards of the winner
             new_state['taken' + str(winner)].extend(new_state['table'])
@@ -98,21 +95,11 @@ class Briscola(Game):
     def terminal_test(self, state):
         """Return True if this is a final state for the game."""
         # the game is over if the deck is empty and the players have no more cards in their hands
-        if state['deck'] == [] and state['hand1'] == [] and state['hand2'] == []:
-            return True
-        else:
-            return False
+        return state['deck'] == [] and state['hand1'] == [] and state['hand2'] == []
 
     def to_move(self, state):
         """Return the player whose move it is in this state."""
         return state['player']
-
-    def display(self):
-        """Print or otherwise display the state."""
-        print(self.state)
-
-    def __repr__(self):
-        return '<{}>'.format(self.__class__.__name__)
 
     def play_game(self, player1, player2):
         """Play an 2-person, move-alternating game."""
@@ -140,14 +127,3 @@ class Briscola(Game):
                 print("Final state: ", state)
                 print(len(state['taken1']), len(state['taken2']))
                 break
-                # if self.utility(state, 1) == 1:
-                #     # print('Player 1 wins. Total points:', sum([get_card_value(card) for card in state['taken1']]))
-                #     # print(state['taken1'])
-                #     break
-                # elif self.utility(state, 2) == 1:
-                #     # print('Player 2 wins. Total points:', sum([get_card_value(card) for card in state['taken2']]))
-                #     # print(state['taken2'])
-                #     break
-
-
-
