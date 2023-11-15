@@ -88,9 +88,16 @@ class Briscola(Game):
     def utility(self, state, player):
         """Return the value of this final state to player."""
         # the player wins if the sum of all cards they took is greater than 60
-        sum_taken = sum(get_card_value(card) for card in state['taken' + str(player)])
+        # substract the opponent's score from the player's score
+        sum_me = sum(get_card_value(card) for card in state['taken' + str(player)])
+        sum_opponent = sum(get_card_value(card) for card in state['taken' + str(3 - player)])
 
-        return 1 if sum_taken > 60 else 0
+        if sum_opponent > 60:
+            return -1000
+        elif sum_me > 60:
+            return 1000
+        else:
+            return sum_me - sum_opponent
         
     def terminal_test(self, state):
         """Return True if this is a final state for the game."""
@@ -125,5 +132,6 @@ class Briscola(Game):
             if self.terminal_test(state):
                 print('Game over')
                 print("Final state: ", state)
-                print(len(state['taken1']), len(state['taken2']))
+                print("Player 1 score: ", sum(get_card_value(card) for card in state['taken1']))
+                print("Player 2 score: ", sum(get_card_value(card) for card in state['taken2']))
                 break

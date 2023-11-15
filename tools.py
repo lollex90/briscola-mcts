@@ -75,3 +75,15 @@ def draw_cards(state):
     state_copy['hand2'].append(card2)
 
     return state_copy
+
+def evaluation_function(state, player_number):
+    """
+    Evaluates the state given a player. It is the difference in points earned
+    """
+    # the evaluation is points in players hand minus points in opponent's hand
+
+    # get the points in the hands
+    eval = sum(get_card_value(card) for card in state['hand' + str(player_number)]) - sum(get_card_value(card) for card in state['hand' + str(3 - player_number)])
+    return eval
+    
+
