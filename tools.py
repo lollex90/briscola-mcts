@@ -85,5 +85,49 @@ def evaluation_function(state, player_number):
     # get the points in the hands
     eval = sum(get_card_value(card) for card in state['hand' + str(player_number)]) - sum(get_card_value(card) for card in state['hand' + str(3 - player_number)])
     return eval
+
+def my_monte_carlo_tree_search(state, game, n_sim):
+    """
+    Monte Carlo Tree Search algorithm
+    """   
+
+    # Explore the possible moves given the state
+    possible_moves = game.actions(state)
+
+    # If there is only one possible move, return it
+    if len(possible_moves) == 1:
+        return possible_moves[0]
     
+    # Create a dictionary to store the number of wins for each move
+    wins = {}
+    player = game.to_move(state)
+
+    # For each possible move, simulate n_sim games and store the number of wins
+    for move in possible_moves:
+        wins[move] = 0
+
+        for sim in range(n_sim):
+            # Create a copy of the state
+            state_copy = deepcopy(state)
+
+            # Play the move
+            state_copy = game.result(state_copy, move)
+
+            # generate a random hand for the opponent
+            hand2_new = random.sample(state_copy['deck'], k=3)
+            state_copy['hand2'] = hand2_new
+            deck_new = [card for card in state_copy['deck'] if card not in hand2_new]
+            state_copy['deck'] = deck_new
+
+            # Simulate the game
+            while not game.terminal_test(state_copy):
+                action = random.choice(game.actions(state_copy))
+                state_copy = game.result(state_copy, action)
+
+            # If the player wins, add one to the number of wins
+            if game.utility(state_copy, player) == 1:
+                wins[move] += 1
+
+    # Return the move with the highest number of wins
+    return max(wins, key=wins.get)
 
