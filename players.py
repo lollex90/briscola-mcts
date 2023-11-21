@@ -87,10 +87,24 @@ class MyMonteCarloTreeSearchPlayer:
     def generate_move(self, state, game):
         """Choose a move based on the Monte Carlo Tree Search algorithm."""
         # solve fully last 3 tricks
-        state_copy = deepcopy(state)    
-        if len(state_copy["taken1"]) + len(state_copy["taken2"]) < 34:
+        state_copy = deepcopy(state)
+
+        # the state is assumed to be either a simulation or real game state
+        # we convert it here by assuming that player 2's hand is 
+        # the deck - hand1, taken1, taken2, table, (and briscola later)
+
+        new_hand_2 = [card for card in full_deck if card not in state_copy["hand1"] and card not in state_copy["taken1"] and card not in state_copy["taken2"] and card not in state_copy["table"] and  card != state_copy["briscola"]]        
+        state_copy["hand2"] = new_hand_2
+
+        # check that all cards are still present
+        total_cards = len(state_copy["hand1"]) + len(state_copy["hand2"]) + len(state_copy["table"]) + len(state_copy["taken1"]) + len(state_copy["taken2"]) + 1 # for briscola
+        if total_cards != 40:
+            print("ERROR: total number of cards is not 40")
+        
+        if len(state['deck']) != 0:
             return my_monte_carlo_tree_search(state_copy, game, self.simulations)
         else:
+            state_copy = deepcopy(state)
             return alpha_beta_search(state_copy, game)
     
 class AlphaBetaPlayer:

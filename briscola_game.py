@@ -177,6 +177,7 @@ class Briscola(Game):
         print("Player 1 hand: ", state['hand1'])
         print("Player 2 hand: ", state['hand2'])
         print("The first to play is: ", state['player'])
+        print("Initial deck length is: ", len(state['deck']))
         while True:
             # the player to move makes a move
             state_copy = deepcopy(state)
@@ -188,6 +189,7 @@ class Briscola(Game):
             # the move is applied to the state
             state = self.result(state, move)
             print("The new state is: ", state)
+            print("Deck length is: ", len(state['deck']))
 
             # check if the game is over
             if self.terminal_test(state):

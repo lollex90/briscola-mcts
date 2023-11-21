@@ -90,7 +90,6 @@ def my_monte_carlo_tree_search(state, game, n_sim):
     """
     Monte Carlo Tree Search algorithm
     """   
-
     # Explore the possible moves given the state
     possible_moves = game.actions(state)
 
@@ -102,6 +101,9 @@ def my_monte_carlo_tree_search(state, game, n_sim):
     wins = {}
     player = game.to_move(state)
 
+    if player != 1:
+        raise Exception("Player to move is not 1")
+
     # For each possible move, simulate n_sim games and store the number of wins
     for move in possible_moves:
         wins[move] = 0
@@ -110,17 +112,23 @@ def my_monte_carlo_tree_search(state, game, n_sim):
             # Create a copy of the state
             state_copy = deepcopy(state)
 
+            if len(state_copy['table']) == 0:
+                hand_2_new = random.sample(state_copy['hand2'], 3)
+            else: 
+                hand_2_new = random.sample(state_copy['hand2'], 2)
+
+            state_copy['hand2'] = hand_2_new  
+
             # Play the move
             state_copy = game.result(state_copy, move)
 
-            # generate a random hand for the opponent
-            hand2_new = random.sample(state_copy['deck'], k=3)
-            state_copy['hand2'] = hand2_new
-            deck_new = [card for card in state_copy['deck'] if card not in hand2_new]
-            state_copy['deck'] = deck_new
+            # randomise a hand for the second player
+               
 
             # Simulate the game
             while not game.terminal_test(state_copy):
+                # print("Deck length: ", len(state_copy['deck']))
+                total_cards = len(state_copy['hand1']) + len(state_copy['hand2']) + len(state_copy['table']) + len(state_copy['deck']) + len(state_copy['taken1']) + len(state_copy['taken2'])
                 action = random.choice(game.actions(state_copy))
                 state_copy = game.result(state_copy, action)
 
