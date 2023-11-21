@@ -63,19 +63,34 @@ class SmartPlayer:
             # return the move with the highest evaluation
             return moves[moves_eval.index(max(moves_eval))]
 
-# class MonteCarloTreeSearchPlayer:
-#     """A player that chooses a legal move based on the Monte Carlo Tree Search algorithm."""
+class MonteCarloTreeSearchPlayer:
+    """A player that chooses a legal move based on the Monte Carlo Tree Search algorithm."""
 
-#     def __init__(self, simulations=1000):
-#         """Initialize the player."""
-#         self.simulations = simulations  # the number of simulations
+    def __init__(self, simulations=1000):
+        """Initialize the player."""
+        self.simulations = simulations  # the number of simulations
 
-#     def generate_move(self, state_copy, game):
-#         """Choose a move based on the Monte Carlo Tree Search algorithm."""
-#         if len(state_copy["taken1"]) + len(state_copy["taken2"]) < 40:
-#             return generate_move_smart(state_copy, game)
-#         else:
-#             return monte_carlo_tree_search(state_copy, game, self.simulations)
+    def generate_move(self, state, game):
+        """Choose a move based on the Monte Carlo Tree Search algorithm."""
+        state_copy = deepcopy(state)
+
+        # the state is assumed to be either a simulation or real game state
+        # we convert it here by assuming that player 2's hand is 
+        # the deck - hand1, taken1, taken2, table, (and briscola later)
+
+        new_hand_2 = [card for card in full_deck if card not in state_copy["hand1"] and card not in state_copy["taken1"] and card not in state_copy["taken2"] and card not in state_copy["table"] and  card != state_copy["briscola"]]        
+        state_copy["hand2"] = new_hand_2
+
+        # check that all cards are still present
+        total_cards = len(state_copy["hand1"]) + len(state_copy["hand2"]) + len(state_copy["table"]) + len(state_copy["taken1"]) + len(state_copy["taken2"]) + 1 # for briscola
+        if total_cards != 40:
+            print("ERROR: total number of cards is not 40")
+        
+        if len(state['deck']) != 0:
+            return monte_carlo_tree_search(state_copy, game, self.simulations)
+        else:
+            state_copy = deepcopy(state)
+            return alpha_beta_search(state_copy, game)
         
 class MyMonteCarloTreeSearchPlayer:
     """A player that chooses a legal move based on the Monte Carlo Tree Search algorithm."""

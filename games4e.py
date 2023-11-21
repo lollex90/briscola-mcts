@@ -8,7 +8,7 @@ from collections import namedtuple
 import numpy as np
 
 from utils4e import vector_add, MCT_Node, ucb
-from tools import compare_cards, get_card_value
+from tools import evaluate_move, generate_move_smart
 
 GameState = namedtuple('GameState', 'to_move, utility, board, moves')
 StochasticGameState = namedtuple('StochasticGameState', 'to_move, utility, board, moves, chance')
@@ -174,30 +174,6 @@ def alpha_beta_cutoff_search(state, game, d = 12, cutoff_test=None, eval_fn=None
 
 # ______________________________________________________________________________
 # Monte Carlo Tree Search
-
-def evaluate_move(move, state_copy):
-    # calculate the total value of the trick
-    total_value = get_card_value(move) + get_card_value(state_copy["table"][0])
-
-    # return the negative total value if the move loses the trick, otherwise positive
-    if compare_cards(state_copy["table"][0], move, state_copy["briscola"]):
-        return -total_value
-    else:
-        return total_value
-
-def generate_move(state_copy, game):
-    # if the table is empty, play the lowest card
-    player_number = state_copy["player"]
-    if len(state_copy["table"]) == 0:
-        return min(state_copy[f"hand{player_number}"], key=lambda x: get_card_value(x))
-    else:
-        # check the evaluation of each move
-        moves = game.actions(state_copy)
-        moves_eval = [evaluate_move(move, state_copy) for move in moves]
-
-        # return the move with the highest evaluation
-        return moves[moves_eval.index(max(moves_eval))]
-        
 def monte_carlo_tree_search(state, game, N=1000):
     def select(n):
         # print("SELECT")
@@ -221,7 +197,7 @@ def monte_carlo_tree_search(state, game, N=1000):
         player = game.to_move(state)
         while not game.terminal_test(state):
             # print("The state is: ", state)
-            action = random.choice(game.actions(state))
+            action = generate_move_smart(state, game)
             # print("The action is: ", action)
             state = game.result(state, action)
             # print("The new state is: ", state)
@@ -247,6 +223,8 @@ def monte_carlo_tree_search(state, game, N=1000):
         backprop(child, result)
 
     max_state = max(root.children, key=lambda p: p.N)
+
+    print("The scores are:", [child.N for child in root.children])
 
     return root.children.get(max_state)
 

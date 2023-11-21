@@ -183,13 +183,13 @@ class Briscola(Game):
             state_copy = deepcopy(state)
             if self.to_move(state) == 1:
                 move = player1.generate_move(state_copy, self)
+                print("Player 1 plays: ", move)
             else:
                 move = player2.generate_move(state_copy, self)
-            print("The move is: ", move)
+                print("Player 2 plays: ", move)
             # the move is applied to the state
             state = self.result(state, move)
             print("The new state is: ", state)
-            print("Deck length is: ", len(state['deck']))
 
             # check if the game is over
             if self.terminal_test(state):

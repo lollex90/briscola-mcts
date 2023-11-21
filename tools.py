@@ -129,7 +129,7 @@ def my_monte_carlo_tree_search(state, game, n_sim):
             while not game.terminal_test(state_copy):
                 # print("Deck length: ", len(state_copy['deck']))
                 total_cards = len(state_copy['hand1']) + len(state_copy['hand2']) + len(state_copy['table']) + len(state_copy['deck']) + len(state_copy['taken1']) + len(state_copy['taken2'])
-                action = random.choice(game.actions(state_copy))
+                action = generate_move_smart(state_copy, game)
                 state_copy = game.result(state_copy, action)
 
             # If the player wins, add one to the number of wins
@@ -137,6 +137,7 @@ def my_monte_carlo_tree_search(state, game, n_sim):
                 wins[move] += 1
 
     # Return the move with the highest number of wins
+    print("Wins: ", wins)
     return max(wins, key=wins.get)
 
 def evaluate_move(move, state_copy):
