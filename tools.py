@@ -131,3 +131,26 @@ def my_monte_carlo_tree_search(state, game, n_sim):
     # Return the move with the highest number of wins
     return max(wins, key=wins.get)
 
+def evaluate_move(move, state_copy):
+    # calculate the total value of the trick
+    total_value = get_card_value(move) + get_card_value(state_copy["table"][0])
+
+    # return the negative total value if the move loses the trick, otherwise positive
+    if compare_cards(state_copy["table"][0], move, state_copy["briscola"]):
+        return -total_value
+    else:
+        return total_value
+
+def generate_move_smart(state_copy, game):
+    # if the table is empty, play the lowest card
+    player_number = state_copy["player"]
+    if len(state_copy["table"]) == 0:
+        return min(state_copy[f"hand{player_number}"], key=lambda x: get_card_value(x))
+    else:
+        # check the evaluation of each move
+        moves = game.actions(state_copy)
+        moves_eval = [evaluate_move(move, state_copy) for move in moves]
+
+        # return the move with the highest evaluation
+        return moves[moves_eval.index(max(moves_eval))]
+
